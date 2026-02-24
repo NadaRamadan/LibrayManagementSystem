@@ -9,6 +9,7 @@ exports.createBorrower = async (req,res) =>{
     const borrower = await Borrower.create(
         {name,
         email,
+        membershipId,
         registeredDate: Date.now(),
         }
 
