@@ -20,8 +20,8 @@ exports.createBook = async (req, res) => {
 
     res.status(201).json(book);
   } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+   console.log(err);  
+}
 };
 
 

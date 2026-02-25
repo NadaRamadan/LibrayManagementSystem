@@ -8,7 +8,7 @@ require("./models/loan");
 
 (async () => {
   try {
-    await sequelize.sync({ alter: true });
+  sequelize.sync({ force: true });
     console.log("Database synced");
     process.exit();
   } catch (err) {
