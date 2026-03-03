@@ -38,14 +38,13 @@ exports.UpdateBorrower = async (req,res)=>{
     try{
     const {id} = req.params;
     const {name,email,membershipId} = req.body;
-        if (!id ){
-            return res.status(400).json({message:"Id is required"})
-        }
+    if (!id ){
+        return res.status(400).json({message:"Id is required"})
+    }
     const borrower = await Borrower.findByPk(id);
     if (!borrower){
        return res.status(404).json({message:"Borrower not found"});
     }
-
     await borrower.update({name,email,membershipId});
 
 
