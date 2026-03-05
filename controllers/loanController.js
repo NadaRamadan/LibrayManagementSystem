@@ -10,20 +10,16 @@ exports.borrowBook = async (req, res) => {
       return res.status(400).json({ message: "BorrowerId and BookId required" });
     }
 
-    // Fetch borrower
     const borrower = await Borrower.findByPk(BorrowerId);
     if (!borrower) return res.status(404).json({ message: "Borrower not found" });
 
-    // Fetch book
     const book = await Book.findByPk(BookId);
     if (!book) return res.status(404).json({ message: "Book not found" });
     if (book.quantity <= 0) return res.status(400).json({ message: "Book not available" });
 
-    // Decrement quantity
     book.quantity -= 1;
     await book.save();
 
-    // Create loan
     const borrowedAt = new Date();
     const dueAt = new Date(borrowedAt);
     dueAt.setDate(dueAt.getDate() + days);
@@ -57,6 +53,22 @@ exports.returnBook = async (req, res) => {
     await loan.destroy();
 
     res.json({ message: "Book returned successfully", loan });
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.getBorrowedBooks = async (req, res) => {
+  try {
+    const { BorrowerId } = req.params;
+
+    const loans = await Loan.findAll({
+      where: { BorrowerId },
+      include: [Book]
+    });
+    books= loans.map(loan =>loan.book);
+    res.json(books);
 
   } catch (err) {
     res.status(500).json({ error: err.message });
