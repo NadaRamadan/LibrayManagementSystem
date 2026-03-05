@@ -1,6 +1,9 @@
 const Loan = require("../models/loan");
 const Borrower = require("../models/borrower");
 const Book = require("../models/book");
+const sequelize = require("../config/database");
+
+const t = await sequelize.transaction();
 
 exports.borrowBook = async (req, res) => {
   try {
@@ -17,18 +20,26 @@ exports.borrowBook = async (req, res) => {
     if (!book) return res.status(404).json({ message: "Book not found" });
     if (book.quantity <= 0) return res.status(400).json({ message: "Book not available" });
 
-    book.quantity -= 1;
-    await book.save();
+  
+  book.quantity -= 1;
+await book.save({ transaction: t });
+
+
 
     const borrowedAt = new Date();
     const dueAt = new Date(borrowedAt);
     dueAt.setDate(dueAt.getDate() + days);
 
-    const loan = await Loan.create({ BorrowerId, BookId, borrowedAt, dueAt });
+const loan = await Loan.create(
+  { BorrowerId, BookId, borrowedAt, dueAt },
+  { transaction: t }
+);
 
+await t.commit();
     res.status(201).json({ message: "Book borrowed successfully", loan });
 
   } catch (err) {
+    await t.rollback();
     res.status(500).json({ error: err.message });
   }
 };
@@ -41,7 +52,13 @@ exports.returnBook = async (req, res) => {
       return res.status(400).json({ message: "BorrowerId and BookId required" });
     }
 
-    const loan = await Loan.findOne({ where: { BorrowerId, BookId } });
+    const loan = await Loan.findOne({ where: { 
+      BorrowerId, 
+      BookId,   
+      returnedAt: null
+        } });
+      loan.returnedAt = new Date();
+      await loan.save();
     if (!loan) return res.status(404).json({ message: "Loan not found" });
 
     const book = await Book.findByPk(BookId);
