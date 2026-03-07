@@ -2,6 +2,8 @@ const Loan = require("../models/loan");
 const Borrower = require("../models/borrower");
 const Book = require("../models/book");
 const sequelize = require("../config/database");
+const { Op } = require("sequelize");
+
 
 const t = await sequelize.transaction();
 
@@ -86,6 +88,24 @@ exports.getBorrowedBooks = async (req, res) => {
     });
     books= loans.map(loan =>loan.book);
     res.json(books);
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+exports.getLoansOverdue = async (req, res) => {
+  try {
+
+    const loans = await Loan.findAll({
+      where: {
+        dueAt: { [Op.lt]: new Date() },
+        returnedAt: null
+      },
+        include: [Borrower, Book]
+
+    });
+
+    res.json(loans);
 
   } catch (err) {
     res.status(500).json({ error: err.message });
