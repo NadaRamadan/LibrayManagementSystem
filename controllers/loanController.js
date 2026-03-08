@@ -5,9 +5,10 @@ const sequelize = require("../config/database");
 const { Op } = require("sequelize");
 
 
-const t = await sequelize.transaction();
 
 exports.borrowBook = async (req, res) => {
+  const t = await sequelize.transaction();
+
   try {
     const { BorrowerId, BookId, days = 14 } = req.body;
 
