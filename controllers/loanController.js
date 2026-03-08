@@ -16,10 +16,10 @@ exports.borrowBook = async (req, res) => {
       return res.status(400).json({ message: "BorrowerId and BookId required" });
     }
 
-    const borrower = await Borrower.findByPk(BorrowerId);
+    const borrower = await Borrower.findByPk(BorrowerId, { transaction: t });
     if (!borrower) return res.status(404).json({ message: "Borrower not found" });
 
-    const book = await Book.findByPk(BookId);
+    const book = await Book.findByPk(BookId, { transaction: t });
     if (!book) return res.status(404).json({ message: "Book not found" });
     if (book.quantity <= 0) return res.status(400).json({ message: "Book not available" });
 
