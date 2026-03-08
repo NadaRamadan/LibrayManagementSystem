@@ -60,6 +60,8 @@ exports.returnBook = async (req, res) => {
       BookId,   
       returnedAt: null
         } });
+        if (!loan)
+  return res.status(404).json({ message: "Loan not found" });
       loan.returnedAt = new Date();
       await loan.save();
     if (!loan) return res.status(404).json({ message: "Loan not found" });
