@@ -6,7 +6,7 @@ app.use(express.json());
 
 app.use("/books", require("./routes/bookRoutes"));
 app.use("/borrower", require("./routes/borrowerRoutes"));
-
+app.use("/borrower", require("./routes/loanRoutes"));
 
 sequelize.sync().then(() => {
   app.listen(3000, () => {

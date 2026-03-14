@@ -23,12 +23,21 @@ exports.borrowBook = async (req, res) => {
     if (!book) return res.status(404).json({ message: "Book not found" });
     if (book.quantity <= 0) return res.status(400).json({ message: "Book not available" });
 
-  
+    const existingLoan = await Loan.findOne({
+    where: {
+      BorrowerId,
+      BookId,
+      returnedAt: null
+    }
+  });
+
+  if (existingLoan){ 
+    return res.status(400).json({
+      message: "Borrower already borrowed this book"
+    });
+  }
   book.quantity -= 1;
-await book.save({ transaction: t });
-
-
-
+    await book.save({ transaction: t });
     const borrowedAt = new Date();
     const dueAt = new Date(borrowedAt);
     dueAt.setDate(dueAt.getDate() + days);
@@ -69,10 +78,9 @@ exports.returnBook = async (req, res) => {
     const book = await Book.findByPk(BookId);
     if (!book) return res.status(404).json({ message: "Book not found" });
 
-    book.quantity += 1;
-    await book.save();
+    book.decrement("quantity", { by: 1, transaction: t }); 
+     await book.save();
 
-    await loan.destroy();
 
     res.json({ message: "Book returned successfully", loan });
 
@@ -89,7 +97,7 @@ exports.getBorrowedBooks = async (req, res) => {
       where: { BorrowerId },
       include: [Book]
     });
-    books= loans.map(loan =>loan.book);
+  const  books= loans.map(loan =>loan.book);
     res.json(books);
 
   } catch (err) {
